@@ -15,20 +15,20 @@ CREATE TABLE Player
 	FOREIGN KEY(team_id) REFERENCES Team (id)
 ); 
 
---CREATE TABLE Team
---(
---	id,
---	name,
---	city,
---	coach,
---	/* uses name player name as foreign key*/ 
---	captain,
---
---	/* Constraints */  
---	PRIMARY KEY(id), 
---	FOREIGN KEY(captain) REFERENCES Player (name)
---
---); 
+CREATE TABLE Team
+(
+	id INTEGER NOT NULL,
+	name VARCHAR(30) NOT NULL,
+	city VARCHAR(30) NOT NULL,
+	coach VARCHAR(30) NOT NULL,
+	/* uses name player name as foreign key*/
+	captain,
+
+	/* Constraints */
+	PRIMARY KEY(id),
+	FOREIGN KEY(captain) REFERENCES Player (name)
+
+);
 
 CREATE TABLE Game
 (
@@ -46,14 +46,14 @@ CREATE TABLE Game
 	FOREIGN KEY(guest_id) REFERENCES Team (team_id) 
 ); 
 
---CREATE TABLE Injury
---(
---	injury_id,  		
---	player_id, 
---	incident_description, 	
---	injury_description, 
---
---	/* Constraints */ 
---	PRIMARY KEY(id), 
---	FOREIGN KEY(player_id) REFERENCES Team(team_id)
---); 
+CREATE TABLE Injury
+(
+	injury_id INTEGER NOT NULL,
+	player_id INTEGER NOT NULL,
+	incident_description VARCHAR(255),
+	injury_description VARCHAR (255),
+
+	/* Constraints */
+	PRIMARY KEY(id),
+	FOREIGN KEY(player_id) REFERENCES Team(team_id)
+);
