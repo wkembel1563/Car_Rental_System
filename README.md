@@ -8,5 +8,5 @@ sqlite3
 
 Method used to load data into tables:
 used sqlite commands, 
-.import filename.csv TableName
+.import filename.csv TableName --skip1
 for each table. 
