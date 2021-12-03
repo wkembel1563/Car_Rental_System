@@ -126,7 +126,11 @@ def input_query():
     conn = sqlite3.connect('cars.db')
     c = conn.cursor()
     # TODO case - total amount showed when null / not
-    c.execute("SELECT C.CustID, C.Name, R.TotalAmount,CASE WHEN R.PaymentDate != 'NULL' THEN '$0.00' END FROM CUSTOMER AS C JOIN RENTAL R ON R.CustID = C.CustID WHERE C.CustID=? OR C.Name = ?",(CustID.get(),Name.get(),) )
+    x = CustID.get()
+    y = Name.get()
+    c.execute("SELECT C.CustID, C.Name, R.TotalAmount,CASE WHEN R.PaymentDate != 'NULL' THEN '$0.00'END FROM CUSTOMER AS C JOIN RENTAL R ON R.CustID = C.CustID WHERE (C.CustID=? or C.CustID IS NULL) OR (C.Name = ?) ",(x,y,) )
+    if x =='' or y=='':
+        c.execute("SELECT C.CustID, C.Name, R.TotalAmount,CASE WHEN R.PaymentDate != 'NULL' THEN '$0.00'END FROM CUSTOMER AS C JOIN RENTAL R ON R.CustID = C.CustID")
     records = c.fetchall()
     print(records)
 
