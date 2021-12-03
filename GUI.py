@@ -14,13 +14,14 @@ root.geometry("500x500")
 
 # TODO - i just put the database name that i have now
 #connct to DB
+
 database = sqlite3.connect('cars')
 print("Connected to DB")
 
 #create cursor
 cursor = database.cursor()
 
-
+# TODO not working for NULL CustID
 def insert_customer():
 
     insertdb = sqlite3.connect('cars')
@@ -51,5 +52,9 @@ Phone = Entry(root, width = 30)
 Phone.grid(row=2, column=1)
 Phonelabel = Label(root, text = 'Phone')
 Phonelabel.grid(row=2,column=0)
+
+#submit
+submitbutton = Button(root, text = 'Add Customer', command = insert_customer)
+submitbutton.grid(row = 3, column=0, columnspan = 2, pady = 10, padx = 10, ipadx=100)
 
 root.mainloop()
