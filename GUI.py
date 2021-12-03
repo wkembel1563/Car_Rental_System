@@ -6,6 +6,8 @@ from tkinter import *
 from tkinter import ttk
 import sqlite3
 
+# TODO: format phone number input on tab1 
+
 ####################
 # MAIN WINDOW SETUP
 root = Tk()
@@ -32,6 +34,21 @@ tab_parent.add(tab3, text='Tab3')
 
 tab_parent.pack(expand=1, fill='both') # pack the parent to properly display the tabs
 
+################################
+# CONSTS - to index arrays below
+ROW = 0
+COL = 1
+
+####################################
+# TAB1 GRID POSITIONS - ADD CUSTOMER 
+nameLabelPos = [0,0] # row - col
+nameEntryPos = [0,1]
+phoneLabelPos = [1,0]
+phoneEntryPos = [1,1]
+submitBtnPos = [2,0,2,10,10,100] # row - col - columnspan - pady - padx - ipadx
+
+####################################
+# TAB2 GRID POSITIONS - 
 
 # TODO - i just put the database name that i have now
 #connct to DB
@@ -47,14 +64,11 @@ def insert_customer():
 
     insertdb = sqlite3.connect('cars.db')
     insertcursor = insertdb.cursor()
-    insertcursor.execute("INSERT INTO CUSTOMER VALUES(:CustID, :Name, :Phone)",{
-                            'CustID': CustID.get(),
+    insertcursor.execute("INSERT INTO CUSTOMER(Name, Phone) VALUES(:Name, :Phone)",{
+                            #'CustID': CustID.get(),
                             'Name': Name.get(),
                             'Phone': Phone.get()
     })
-
-    records = insertcursor.fetchall()
-    print(records) 
 
     insertdb.commit()
 
@@ -69,21 +83,21 @@ def insert_customer():
 
 #GUI components for root window
 
-CustID = Entry(tab1, width =30)
-CustID.grid(row = 0, column =1, padx=  20)
-CustIDlabel = Label(tab1,text='CustID')
-CustIDlabel.grid(row=0,column=0)
-Name = Entry(tab1, width = 30)
-Name.grid(row=1, column = 1)
-Namelabel = Label(tab1, text='Name')
-Namelabel.grid(row=1,column=0)
-Phone = Entry(tab1, width = 30)
-Phone.grid(row=2, column=1)
-Phonelabel = Label(tab1, text = 'Phone')
-Phonelabel.grid(row=2,column=0)
+# CustID = Entry(tab1, width =30)
+# CustID.grid(row = 0, column =1, padx=  20)
+# CustIDlabel = Label(tab1,text='CustID')
+# CustIDlabel.grid(row=0,column=0)
+Name 		= Entry(tab1, width = 30)
+Namelabel 	= Label(tab1, text='Name')
+Phone 		= Entry(tab1, width = 30)
+Phonelabel 	= Label(tab1, text = 'Phone')
+Name.grid(row = nameEntryPos[ROW], column = nameEntryPos[COL])
+Namelabel.grid(row = nameLabelPos[ROW], column = nameLabelPos[COL]) 
+Phone.grid(row = phoneEntryPos[ROW], column = phoneEntryPos[COL])
+Phonelabel.grid(row = phoneLabelPos[ROW], column = phoneLabelPos[COL])
 
 #submit
 submitbutton = Button(tab1, text = 'Add Customer', command = insert_customer)
-submitbutton.grid(row = 3, column=0, columnspan = 2, pady = 10, padx = 10, ipadx=100)
+submitbutton.grid(row = submitBtnPos[0], column=submitBtnPos[1], columnspan = submitBtnPos[2], pady = submitBtnPos[3], padx = submitBtnPos[4], ipadx=submitBtnPos[5])
 
 root.mainloop()
