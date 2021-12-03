@@ -22,7 +22,7 @@ COL = 1
 # MAIN WINDOW SETUP
 root = Tk()
 root.title('Car Rental Database')
-root.geometry("500x500")
+root.geometry("600x300")
 
 ############
 # TAB SETUP
