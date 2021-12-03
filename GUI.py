@@ -52,7 +52,15 @@ def insert_customer():
                             'Name': Name.get(),
                             'Phone': Phone.get()
     })
+
+    records = insertcursor.fetchall()
+    print(records) 
+
     insertdb.commit()
+
+    # close db connection 
+    insertdb.close() 
+	
 
 #def insert_vehicle():
 
