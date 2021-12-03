@@ -15,7 +15,7 @@ root.geometry("500x500")
 # TODO - i just put the database name that i have now
 #connct to DB
 
-database = sqlite3.connect('cars')
+database = sqlite3.connect('cars.db')
 print("Connected to DB")
 
 #create cursor
