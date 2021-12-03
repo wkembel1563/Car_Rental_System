@@ -178,5 +178,19 @@ catEntry.grid(row  = catEntryPos[ROW],  column = catEntryPos[COL], sticky = W)
 t2submitbutton = Button(tab2, text = 'Add Vehicle', command = insert_vehicle)
 t2submitbutton.grid(row = t2SubmitBtnPos[0], column=t2SubmitBtnPos[1], columnspan = t2SubmitBtnPos[2], pady = t2SubmitBtnPos[3], padx = t2SubmitBtnPos[4], ipadx=t2SubmitBtnPos[5])
 
+#TAB2 input query
+def vehicle_search():
+    conn = sqlite3.connect('cars.db')
+    c = conn.cursor()
+    x = vIdEntry.get()
+    y = descEntry.get()
+    c.execute("SELECT V.VehicleID, V.Description, R.Daily FROM VEHICLE AS V JOIN RATE R ON V.Type = R.Type AND V.Category = R.Category WHERE V.VehicleID=? OR V.Description = ?",(x,y,) )
+    if x =='' and y=='':
+        c.execute("SELECT V.VehicleID, V.Description, R.Daily FROM VEHICLE AS V JOIN RATE R ON V.Type = R.Type AND V.Category = R.Category")
+    records = c.fetchall()
+    print(records)
+#TAB2 input query button
+input_query_button2 = Button(tab2, text = 'Search Vehicle', command = vehicle_search)
+input_query_button2.grid(row = 6, column = 0 , columnspan = 2, pady=10, padx=10 , ipadx=100 )
 
 root.mainloop()
