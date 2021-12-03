@@ -7,6 +7,8 @@ from tkinter import ttk
 import sqlite3
 
 # TODO: format phone number input on tab1 
+# TODO: display query purpose info to user for each query 
+# TODO: for each query, print all rows involved and their quantity
 
 ####################
 # MAIN WINDOW SETUP
@@ -48,7 +50,7 @@ phoneEntryPos = [1,1]
 submitBtnPos = [2,0,2,10,10,100] # row - col - columnspan - pady - padx - ipadx
 
 ####################################
-# TAB2 GRID POSITIONS - 
+# TAB2 GRID POSITIONS - ADD NEW VEHICLE
 
 # TODO - i just put the database name that i have now
 #connct to DB
