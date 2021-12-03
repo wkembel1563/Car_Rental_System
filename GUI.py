@@ -122,15 +122,16 @@ t1submitbutton = Button(tab1, text = 'Add Customer', command = insert_customer)
 t1submitbutton.grid(row = t1SubmitBtnPos[0], column=t1SubmitBtnPos[1], columnspan = t1SubmitBtnPos[2], pady = t1SubmitBtnPos[3], padx = t1SubmitBtnPos[4], ipadx=t1SubmitBtnPos[5])
 
 #TAB1 input query
+# TODO name contains input display
 def input_query():
     conn = sqlite3.connect('cars.db')
     c = conn.cursor()
     # TODO case - total amount showed when null / not
     x = CustID.get()
     y = Name.get()
-    c.execute("SELECT C.CustID, C.Name, R.TotalAmount,CASE WHEN R.PaymentDate != 'NULL' THEN '$0.00'END FROM CUSTOMER AS C JOIN RENTAL R ON R.CustID = C.CustID WHERE C.CustID=? OR C.Name = ? ",(x,y,) )
+    c.execute("SELECT C.CustID, C.Name, R.TotalAmount,CASE WHEN R.PaymentDate != 'NULL' THEN '$0.00'END FROM CUSTOMER AS C JOIN RENTAL R ON R.CustID = C.CustID WHERE C.CustID=? OR C.Name = ? ORDER BY R.TotalAmount ",(x,y,) )
     if x =='' and y=='':
-        c.execute("SELECT C.CustID, C.Name, R.TotalAmount,CASE WHEN R.PaymentDate != 'NULL' THEN '$0.00'END FROM CUSTOMER AS C JOIN RENTAL R ON R.CustID = C.CustID")
+        c.execute("SELECT C.CustID, C.Name, R.TotalAmount,CASE WHEN R.PaymentDate != 'NULL' THEN '$0.00'END FROM CUSTOMER AS C JOIN RENTAL R ON R.CustID = C.CustID ORDER BY R.TotalAmount")
     records = c.fetchall()
     print(records)
 
@@ -179,16 +180,18 @@ t2submitbutton = Button(tab2, text = 'Add Vehicle', command = insert_vehicle)
 t2submitbutton.grid(row = t2SubmitBtnPos[0], column=t2SubmitBtnPos[1], columnspan = t2SubmitBtnPos[2], pady = t2SubmitBtnPos[3], padx = t2SubmitBtnPos[4], ipadx=t2SubmitBtnPos[5])
 
 #TAB2 input query
+# TODO contains description, format daily rental amount $_.__ , put non applicable for cars w no rentals
 def vehicle_search():
     conn = sqlite3.connect('cars.db')
     c = conn.cursor()
     x = vIdEntry.get()
     y = descEntry.get()
-    c.execute("SELECT V.VehicleID, V.Description, R.Daily FROM VEHICLE AS V JOIN RATE R ON V.Type = R.Type AND V.Category = R.Category WHERE V.VehicleID=? OR V.Description = ?",(x,y,) )
+    c.execute("SELECT V.VehicleID, V.Description, R.Daily FROM VEHICLE AS V JOIN RATE R ON V.Type = R.Type AND V.Category = R.Category WHERE V.VehicleID=? OR V.Description = ? ORDER BY R.Daily",(x,y,) )
     if x =='' and y=='':
-        c.execute("SELECT V.VehicleID, V.Description, R.Daily FROM VEHICLE AS V JOIN RATE R ON V.Type = R.Type AND V.Category = R.Category")
+        c.execute("SELECT V.VehicleID, V.Description, R.Daily FROM VEHICLE AS V JOIN RATE R ON V.Type = R.Type AND V.Category = R.Category ORDER BY R.Daily")
     records = c.fetchall()
     print(records)
+	
 #TAB2 input query button
 input_query_button2 = Button(tab2, text = 'Search Vehicle', command = vehicle_search)
 input_query_button2.grid(row = 6, column = 0 , columnspan = 2, pady=10, padx=10 , ipadx=100 )
