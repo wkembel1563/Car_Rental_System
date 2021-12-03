@@ -34,15 +34,19 @@ root.geometry("500x500")
 tab_parent = ttk.Notebook(root)   # Notebook method returns a parent tab 
 				  # all tabs you click on will be nested in this 'host' tab
 
-tab1 = ttk.Frame(tab_parent) 	  # initialize as subtabs as part of parent tab 
-tab2 = ttk.Frame(tab_parent) 
-tab3 = ttk.Frame(tab_parent)  	  
-
+# TAB 1
+tab1 = ttk.Frame(tab_parent) 	  	  # initialize as subtabs as part of parent tab 
 tab_parent.add(tab1, text='Add Customer') # embed the tabs in the parent and give each a name 
+
+# TAB 2
+tab2 = ttk.Frame(tab_parent) 
 tab_parent.add(tab2, text='Add Vehicle')
+
+# TAB 3
+tab3 = ttk.Frame(tab_parent)  	  
 tab_parent.add(tab3, text='Tab3')
 
-tab_parent.pack(expand=1, fill='both') # pack the parent to properly display the tabs
+tab_parent.pack(expand=1, fill='both')    # pack the parent to properly display the tabs
 
 
 # TODO - i just put the database name that i have now
