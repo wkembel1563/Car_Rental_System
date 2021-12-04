@@ -198,15 +198,16 @@ t1submitbutton = Button(tab1, text = 'Add Customer', command = insert_customer)
 t1submitbutton.grid(row = t1SubmitBtnPos[0], column=t1SubmitBtnPos[1], columnspan = t1SubmitBtnPos[2], pady = t1SubmitBtnPos[3], padx = t1SubmitBtnPos[4], ipadx=t1SubmitBtnPos[5])
 
 #TAB1 input query
+# TODO name contains input display
 def input_query():
     conn = sqlite3.connect('cars.db')
     c = conn.cursor()
     # TODO case - total amount showed when null / not
     x = CustID.get()
     y = Name.get()
-    c.execute("SELECT C.CustID, C.Name, R.TotalAmount,CASE WHEN R.PaymentDate != 'NULL' THEN '$0.00'END FROM CUSTOMER AS C JOIN RENTAL R ON R.CustID = C.CustID WHERE (C.CustID=? or C.CustID IS NULL) OR (C.Name = ?) ",(x,y,) )
-    if x =='' or y=='':
-        c.execute("SELECT C.CustID, C.Name, R.TotalAmount,CASE WHEN R.PaymentDate != 'NULL' THEN '$0.00'END FROM CUSTOMER AS C JOIN RENTAL R ON R.CustID = C.CustID")
+    c.execute("SELECT C.CustID, C.Name, R.TotalAmount,CASE WHEN R.PaymentDate != 'NULL' THEN '$0.00'END FROM CUSTOMER AS C JOIN RENTAL R ON R.CustID = C.CustID WHERE C.CustID=? OR C.Name = ? ORDER BY R.TotalAmount ",(x,y,) )
+    if x =='' and y=='':
+        c.execute("SELECT C.CustID, C.Name, R.TotalAmount,CASE WHEN R.PaymentDate != 'NULL' THEN '$0.00'END FROM CUSTOMER AS C JOIN RENTAL R ON R.CustID = C.CustID ORDER BY R.TotalAmount")
     records = c.fetchall()
     print(records)
 
@@ -330,5 +331,22 @@ t3checkbutton = Button(tab3, text = 'Check for Free Vehicle', command = check_fo
 t3checkbutton.grid(row = t3CheckBtnPos[0], column=t3CheckBtnPos[1], columnspan = t3CheckBtnPos[2], pady = t3CheckBtnPos[3], padx = t3CheckBtnPos[4], ipadx=t3CheckBtnPos[5])
 t3submitbutton = Button(tab3, text = 'Create Rental', command = insert_rental)
 t3submitbutton.grid(row = t3SubmitBtnPos[0], column=t3SubmitBtnPos[1], columnspan = t3SubmitBtnPos[2], pady = t3SubmitBtnPos[3], padx = t3SubmitBtnPos[4], ipadx=t3SubmitBtnPos[5])
+
+#TAB2 input query
+# TODO contains description, format daily rental amount $_.__ , put non applicable for cars w no rentals
+def vehicle_search():
+    conn = sqlite3.connect('cars.db')
+    c = conn.cursor()
+    x = vIdEntry.get()
+    y = descEntry.get()
+    c.execute("SELECT V.VehicleID, V.Description, R.Daily FROM VEHICLE AS V JOIN RATE R ON V.Type = R.Type AND V.Category = R.Category WHERE V.VehicleID=? OR V.Description = ? ORDER BY R.Daily",(x,y,) )
+    if x =='' and y=='':
+        c.execute("SELECT V.VehicleID, V.Description, R.Daily FROM VEHICLE AS V JOIN RATE R ON V.Type = R.Type AND V.Category = R.Category ORDER BY R.Daily")
+    records = c.fetchall()
+    print(records)
+	
+#TAB2 input query button
+input_query_button2 = Button(tab2, text = 'Search Vehicle', command = vehicle_search)
+input_query_button2.grid(row = 6, column = 0 , columnspan = 2, pady=10, padx=10 , ipadx=100 )
 
 root.mainloop()
