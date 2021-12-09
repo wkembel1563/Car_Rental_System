@@ -101,15 +101,40 @@ def insert_customer():
 def insert_vehicle():
     insertdb = sqlite3.connect('cars.db')
     insertcursor = insertdb.cursor()
-    insertcursor.execute("INSERT INTO VEHICLE VALUES(:VehicleID, :Description, :Year, :Type, :Category)",{
-                            'VehicleID': vIdEntry.get(),
-                            'Description': descEntry.get(),
-			    'Year': yearEntry.get(),
-			    'Type': typeEntry.get(),
-			    'Category': catEntry.get()
-    })
 
+    Vid = vIdEntry.get()
+    insertcursor.execute("""
+                            INSERT INTO VEHICLE VALUES(:VehicleID, :Description, :Year, :Type, :Category)
+                         """
+                        ,{
+                            'VehicleID': Vid,
+                            'Description': descEntry.get(),
+			                'Year': yearEntry.get(),
+			                'Type': typeEntry.get(),
+			                'Category': catEntry.get()
+                        })
+
+    # Sleep to prevent double insert bug 
+    time.sleep(0.5)
     insertdb.commit()
+
+    # Query the data just inserted to print
+    insertcursor.execute("""
+
+                        select * 
+                        from vehicle
+                        where vehicleid = ?
+
+                        """, (Vid,)) 
+
+    result = insertcursor.fetchall()
+
+    # Print the record to console 
+    NULL = []
+    if result == NULL:
+        print("Error. Data not inserted")
+    else:
+        print(result)
 
     # close db connection
     insertdb.close()
@@ -154,7 +179,7 @@ def insert_rental():
     insertdb = sqlite3.connect('cars.db')
     insertcursor = insertdb.cursor()
 
-    # get vehicle id of selection 
+    # get vehicle id of select car 
     vid = ""
     car = freeVString.get()
     for record in records:
@@ -162,28 +187,65 @@ def insert_rental():
             vid = record[2]
             break
             
+    # store primary key values for easy use
+    custid = t3CustID.get()
+    vid = vid
+    sdate = sDateEntry.get()
 	
     # Insert rental record in db 
-    insertString = "INSERT INTO RENTAL VALUES(:CustID, :VehicleID, :StartDate, :OrderDate, :RentalType, :Qty, :ReturnDate, :TotalAmount, :PaymentDate)"
-    insertcursor.execute(insertString,{
-                            'CustID'     : t3CustID.get(),
-                            'VehicleID'  : vid, 
-                            'StartDate'  : sDateEntry.get(),
+    insertString = """
+
+        INSERT INTO RENTAL 
+        VALUES(:CustID,     :VehicleID, 
+               :StartDate,  :OrderDate, 
+               :RentalType, :Qty, 
+               :ReturnDate, :TotalAmount, 
+               :PaymentDate )
+
+                    """
+    insertcursor.execute(insertString
+        ,{
+                    'CustID'     : custid, 
+                    'VehicleID'  : vid, 
+                    'StartDate'  : sdate, 
         		    'OrderDate'  : oDateEntry.get(),
         		    'RentalType' : rentalTypeVar.get(),
         		    'Qty'        : 0, 
         		    'ReturnDate' : rDateEntry.get(), 
         		    'TotalAmount': amntDueEntry.get(), 
         		    'PaymentDate': pDateEntry.get() 
-    })
+        })
 
+    # Update the Qty value for this record 
     one = "UPDATE RENTAL SET Qty = CASE WHEN RentalType = 1 THEN "
     two = "(JULIANDAY(ReturnDate) - JULIANDAY(StartDate)) "
     three = "WHEN RentalType = 7 THEN (JULIANDAY(ReturnDate) - JULIANDAY(StartDate))/7 END;"
     update = one + two + three
     insertcursor.execute(update)
 
+    # Sleep to prevent double insert bug 
+    time.sleep(0.5)
     insertdb.commit()
+
+    # Query the data just inserted to print
+    insertcursor.execute("""
+
+                        select * 
+                        from rental
+                        where vehicleid = ? and 
+                              custid = ? and
+                              startdate = ?; 
+
+                        """, (vid, custid, sdate,)) 
+
+    result = insertcursor.fetchall()
+
+    # Print the record to console 
+    NULL = []
+    if result == NULL:
+        print("Error. Data not inserted")
+    else:
+        print(result)
 
     # close db connection
     insertdb.close()
