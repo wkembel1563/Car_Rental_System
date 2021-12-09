@@ -6,12 +6,7 @@ from tkinter import *
 from tkinter import ttk
 # from tkcalendar import Calendar
 import sqlite3
-
-# TODO: format phone number input on tab1
-# TODO: display query purpose info to user for each query
-# TODO: for each query, print all rows involved and their quantity
-# TODO: can add drop down menu's to select type/model/category etc.
-# TODO: AFTER DONE. tweak justification of boxes to make it look better
+import time
 
 ################################
 # CONSTS - to index grid position
@@ -48,10 +43,13 @@ tab_parent.add(tab2, text='Add Vehicle')
 tab3 = ttk.Frame(tab_parent)
 tab_parent.add(tab3, text='New Rental')
 
+# TAB 4
+tab4 = ttk.Frame(tab_parent)
+tab_parent.add(tab4, text='Return Vehicle')
+
 tab_parent.pack(expand=1, fill='both')    # pack the parent to properly display the tabs
 
 
-# TODO - i just put the database name that i have now
 #connct to DB
 
 database = sqlite3.connect('cars.db')
@@ -60,18 +58,41 @@ print("Connected to DB")
 #create cursor
 cursor = database.cursor()
 
-# TODO not working for NULL CustID
 def insert_customer(): 
 
     insertdb = sqlite3.connect('cars.db')
     insertcursor = insertdb.cursor()
-    insertcursor.execute("INSERT INTO CUSTOMER(Name, Phone) VALUES(:Name, :Phone)",{
-                            #'CustID': CustID.get(),
-                            'Name': Name.get(),
-                            'Phone': Phone.get()
-    })
+    Name_input = Name.get()
+    Phone_input = Phone.get()
+    insertcursor.execute("""
+    						INSERT INTO CUSTOMER(Name, Phone) VALUES(:Name, :Phone)
+    					 """
+    					,{
+                         	'Name': Name_input,
+                         	'Phone': Phone_input
+                         })
 
+    # Sleep to prevent double insert bug 
+    time.sleep(1)
     insertdb.commit()
+
+    # Query the data just inserted to print
+    insertcursor.execute("""
+
+    					select * 
+    					from customer
+    					where Name = ? and Phone = ?
+
+    					""", (Name_input,Phone_input,)) 
+
+    result = insertcursor.fetchall()
+
+    # Print the record to console 
+    NULL = []
+    if result == NULL:
+    	print("Error. Data not inserted")
+    else:
+    	print(result)
 
     # close db connection
     insertdb.close()
@@ -102,7 +123,6 @@ def check_for_vehicle():
     insertdb = sqlite3.connect('cars.db')
     insertcursor = insertdb.cursor()
 
-    # TODO: calculate quantity 
     # Get rental dates to check for free cars
     startD = sDateEntry.get()
     returnD = rDateEntry.get()
@@ -198,11 +218,9 @@ t1submitbutton = Button(tab1, text = 'Add Customer', command = insert_customer)
 t1submitbutton.grid(row = t1SubmitBtnPos[0], column=t1SubmitBtnPos[1], columnspan = t1SubmitBtnPos[2], pady = t1SubmitBtnPos[3], padx = t1SubmitBtnPos[4], ipadx=t1SubmitBtnPos[5])
 
 #TAB1 input query
-# TODO name contains input display
 def input_query():
     conn = sqlite3.connect('cars.db')
     c = conn.cursor()
-    # TODO case - total amount showed when null / not
     x = CustID.get()
     y = Name.get()
     c.execute("SELECT C.CustID, C.Name, R.TotalAmount,CASE WHEN R.PaymentDate != 'NULL' THEN '$0.00'END FROM CUSTOMER AS C JOIN RENTAL R ON R.CustID = C.CustID WHERE C.CustID=? OR C.Name = ? ORDER BY R.TotalAmount ",(x,y,) )
@@ -271,8 +289,6 @@ pDateEntryPos  = [5,1]
 rTypeLabelPos  = [6,0]  # rental type
 rTypeDailyPos  = [6,1]
 rTypeWeeklyPos = [7,1]
-# qtyLabelPos    = [8,0]  # quantity 
-# qtyEntryPos    = [8,1]
 freeVLabelPos  = [8,0]	# display free vehicle choices 
 freeVEntryPos  = [8,1]
 amntDueLabelPos  = [9,0]  # total amount due
@@ -280,7 +296,7 @@ amntDueEntryPos  = [9,1]
 t3SubmitBtnPos = [10,0,2,10,10,100] # row - col - columnspan - pady - padx - ipadx
 
 
-# TAB3 labels/entriesj
+# TAB3 labels/entries
 rentalTypeVar = IntVar()  # tracks value of rental type radio button 
 
 t3CustIDlabel = Label(tab3, text = 'Customer ID: ')
@@ -296,8 +312,6 @@ pDateEntry    = Entry(tab3, justify=LEFT, width = 9)
 rTypeLabel    = Label(tab3, text = 'Rental Type: ')
 rTypeDaily    = Radiobutton(tab3, justify=LEFT, text="Daily", padx = 10, variable=rentalTypeVar, value = 1)
 rTypeWeekly   = Radiobutton(tab3, justify=LEFT, text="Weekly",padx = 10, variable=rentalTypeVar, value = 7)
-# qtyLabel      = Label(tab3, text = 'Quantity (# Days or Weeks): ')
-# qtyEntry      = Entry(tab3, justify=LEFT, width = 5)
 freeVLabel    = Label(tab3, text = 'Free Vehicles: ')
 freeVList     = ["NULL"] 
 freeVString   = StringVar(root)
@@ -319,8 +333,6 @@ pDateEntry.grid(row  = pDateEntryPos[ROW], column = pDateEntryPos[COL], sticky =
 rTypeLabel.grid(row  = rTypeLabelPos[ROW], column = rTypeLabelPos[COL], sticky = W)
 rTypeDaily.grid(row  = rTypeDailyPos[ROW], column = rTypeDailyPos[COL], sticky = W)
 rTypeWeekly.grid(row = rTypeWeeklyPos[ROW], column = rTypeWeeklyPos[COL], sticky = W)
-# qtyLabel.grid(row    = qtyLabelPos[ROW],   column = qtyLabelPos[COL],   sticky = W)
-# qtyEntry.grid(row    = qtyEntryPos[ROW],   column = qtyEntryPos[COL],   sticky = W)     
 freeVLabel.grid(row  = freeVLabelPos[ROW], column = freeVLabelPos[COL], sticky = W)   
 freeVEntry.grid(row  = freeVEntryPos[ROW], column = freeVEntryPos[COL], sticky = W)   
 amntDueLabel.grid(row = amntDueLabelPos[ROW], column = amntDueLabelPos[COL], sticky = W) 
@@ -333,7 +345,6 @@ t3submitbutton = Button(tab3, text = 'Create Rental', command = insert_rental)
 t3submitbutton.grid(row = t3SubmitBtnPos[0], column=t3SubmitBtnPos[1], columnspan = t3SubmitBtnPos[2], pady = t3SubmitBtnPos[3], padx = t3SubmitBtnPos[4], ipadx=t3SubmitBtnPos[5])
 
 #TAB2 input query
-# TODO contains description, format daily rental amount $_.__ , put non applicable for cars w no rentals
 def vehicle_search():
     conn = sqlite3.connect('cars.db')
     c = conn.cursor()
@@ -348,5 +359,75 @@ def vehicle_search():
 #TAB2 input query button
 input_query_button2 = Button(tab2, text = 'Search Vehicle', command = vehicle_search)
 input_query_button2.grid(row = 6, column = 0 , columnspan = 2, pady=10, padx=10 , ipadx=100 )
+
+# Search Funtion that retrieves the TotalAmount based on the given information
+def search():
+    conn = sqlite3.connect('cars.db')
+    c = conn.cursor()
+
+    CustName = NameEntry.get()
+    ReturnDate = ReturnEntry.get()
+    Description = InfoEntry.get()
+    UpDate = PayDateEntry.get()
+
+    if CustID == "" or ReturnDate == '' or Description == '' or UpDate == '':
+        tkinter.messagebox.showinfo("Error", "All section must be filled out!")
+    else:
+        c.execute("SELECT TotalAmount FROM RENTAL AS R WHERE (SELECT CustID FROM CUSTOMER WHERE Name = ?) = R.CustID and ReturnDate = ? AND (SELECT VehicleID FROM VEHICLE WHERE Description = ?) = R.VehicleID",(CustName, ReturnDate, Description))
+        records = c.fetchall()
+        # print(records)
+
+        print_amount = ''
+        for amount in records:
+            print_amount += "Payment: $" + str(amount[0]) + "\n"
+
+        if print_amount != '':
+            #search_label = Label(tab3, text=print_amount)
+            #search_label.grid(row=10, column=0, columnspan=5)
+            tkinter.messagebox.showinfo("Payment", print_amount)
+        else:
+            tkinter.messagebox.showinfo("Invalid", "Invalid")
+
+        c.execute("Update RENTAL AS R SET RETURNED=1, PaymentDate = ? WHERE (SELECT CustID FROM CUSTOMER WHERE Name = ?) = R.CustID and ReturnDate = ? AND (SELECT VehicleID FROM VEHICLE WHERE Description = ?) = R.VehicleID",(UpDate, CustName, ReturnDate, Description))
+        
+
+        conn.commit()
+
+    conn.close()
+
+# Clears the entries in Tab4
+def clear():
+    NameEntry.delete(0,END)
+    ReturnEntry.delete(0,END)
+    InfoEntry.delete(0,END)
+    PayDateEntry.delete(0,END)
+
+# Entries in Tab4
+NameEntry = Entry(tab4, justify=LEFT, width=30,)
+NameEntry.grid(row=0,column=1)
+ReturnEntry = Entry(tab4, justify=LEFT, width=30)
+ReturnEntry.grid(row=1,column=1)
+InfoEntry = Entry(tab4, justify=LEFT, width=30)
+InfoEntry.grid(row=2, column=1)
+PayDateEntry = Entry(tab4, justify=LEFT, width=30)
+PayDateEntry.grid(row=3, column=1)
+
+# Labels in Tab4
+NameEntry1 = Label(tab4, text='Name:')
+NameEntry1.grid(row=0,column=0)
+ReturnEntry1 = Label(tab4, text='Return Date:')
+ReturnEntry1.grid(row=1, column=0)
+InfoEntry1 = Label(tab4, text='Vehicle Information:')
+InfoEntry1.grid(row=2, column=0)
+DateLabel = Label(tab4, text="Payment Date")
+DateLabel.grid(row=3,column=0)
+
+# Submit Button in Tab4
+t3submit = Button(tab4, text='Pay', command = search)
+t3submit.grid(row=4, column=0, columnspan=50)
+
+# Clear button in Tab4
+clear_btn = Button(tab4, text='Clear', command=clear)
+clear_btn.grid(row=7, column=0, columnspan=50)
 
 root.mainloop()
