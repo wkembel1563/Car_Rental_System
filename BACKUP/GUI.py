@@ -9,8 +9,6 @@ import sqlite3
 from sqlite3.dbapi2 import paramstyle
 import time
 
-# TODO: print records in messages 
-
 ################################
 # CONSTS - to index grid position
 # 	   arrays below
@@ -50,11 +48,9 @@ tab_parent.add(tab3, text='New Rental')
 tab4 = ttk.Frame(tab_parent)
 tab_parent.add(tab4, text='Return Rental')
 
-# TAB 5
 tab5 = ttk.Frame(tab_parent)
 tab_parent.add(tab5, text='View Customers')
 
-# TAB 6
 tab6 = ttk.Frame(tab_parent)
 tab_parent.add(tab6, text='View Vehicles')
 
@@ -68,7 +64,6 @@ print("Connected to DB")
 
 #create cursor
 cursor = database.cursor()
-
 
 def insert_customer(): 
 
@@ -246,7 +241,7 @@ def insert_rental():
                         from rental
                         where vehicleid = ? and 
                               custid = ? and
-                              startdate = ? 
+                              startdate = ?; 
 
                         """, (vid, custid, sdate,)) 
 
@@ -451,7 +446,7 @@ def search():
     Description = InfoEntry.get()
     UpDate = PayDateEntry.get()
 
-    if CustName == "" or ReturnDate == '' or Description == '' or UpDate == '':
+    if CustID == "" or ReturnDate == '' or Description == '' or UpDate == '':
         tkinter.messagebox.showinfo("Error", "All section must be filled out!")
     else:
         c.execute("SELECT TotalAmount FROM RENTAL AS R WHERE (SELECT CustID FROM CUSTOMER WHERE Name = ?) = R.CustID and ReturnDate = ? AND (SELECT VehicleID FROM VEHICLE WHERE Description = ?) = R.VehicleID",(CustName, ReturnDate, Description))
@@ -472,7 +467,7 @@ def search():
 
         c.execute("Update RENTAL AS R SET RETURNED=1, PaymentDate = ? WHERE (SELECT CustID FROM CUSTOMER WHERE Name = ?) = R.CustID and ReturnDate = ? AND (SELECT VehicleID FROM VEHICLE WHERE Description = ?) = R.VehicleID",(UpDate, CustName, ReturnDate, Description))
 
-    conn.commit()
+        conn.commit()
 
     conn.close()
 
@@ -500,134 +495,99 @@ DateLabel.grid(row=3,column=0)
 t3submit = Button(tab4, text='Pay', command = search)
 t3submit.grid(row=4, column=1)
 
-
-# Clear button for tab5 in response to search 
-def labelAndClear(tab, string, Lr, Lc, Cr, Cc): 
-    search_label = Label(tab, text=string,anchor=W, justify=LEFT)
-    search_label.grid(row=Lr, column=Lc)
-
-    def on_click():
-        btn.destroy()
-        search_label.after(100, search_label.destroy())
-        CustName.delete(0, END)
-        ID_Entry.delete(0, END)
-
-    btn = Button(tab, text='Clear', command= on_click)
-    btn.grid(row=Cr,column=Cc)
-
-# Clear button for tab6 in response to search 
-def labelAndClear6(tab, string, Lr, Lc, Cr, Cc): 
-    search_label = Label(tab, text=string,anchor=W, justify=LEFT)
-    search_label.grid(row=Lr, column=Lc)
-
-    def on_click():
-        btn.destroy()
-        search_label.after(100, search_label.destroy())
-        VIN_Entry.delete(0, END)
-        DESName.delete(0, END)
-
-    btn = Button(tab, text='Clear', command= on_click)
-    btn.grid(row=Cr,column=Cc)
-
 #Customer Search Function
 def CustSearch():
 
-    conn = sqlite3.connect('cars.db')
-    c = conn.cursor()
+     def on_click():
+        search_label.after(100, search_label.destroy())
+        CustName.delete(0, END)
+        ID_Entry.delete(0, END)
+        Part_Entry.delete(0,END)
+        root.geometry("750x400")
 
-    # get all data from text entries 
-    customerID = ID_Entry.get()
-    customerName = CustName.get()
+     conn = sqlite3.connect('cars.db')
+     c = conn.cursor()
 
-    # search based on customer id 
-    if customerID:
+     print_data = "ID\tName\t\tBalance\n"
 
-        # retrieve vRentalInfo records for this customer
-        c.execute("""
+     if CustName.get() and not ID_Entry.get() and not Part_Entry.get():
+         print("---Name---")
+         a = c.execute("SELECT CustomerID, CustomerName, RentalBalance FROM vRentalInfo WHERE CustomerName=?",(CustName.get(),))
+         records = c.fetchall()
+         print(records)
+         for data in records:
+             if data[1] == 'J. Brown' or data[1] =='A. Hess':
+                 print_data += str(data[0])+"\t"+data[1]+"\t\t"+"$"+str(data[2])+".00\n"
+             else:
+                print_data += str(data[0])+"\t"+data[1]+"\t"+"$"+str(data[2])+".00\n"
 
-                    select customerid as 'ID', customername as 'Name', 
-			   rentalbalance as 'Remaining Balance', vin
-                    from vrentalinfo 
-                    where customerid = ?
-		    order by rentalbalance
+         search_label = Label(tab5, text=print_data,anchor=W, justify=LEFT)
+         search_label.grid(row=5, column=1)
+         root.geometry("750x500")
+         btn = Button(tab5, text='Clear', command= on_click)
+         btn.grid(row=6,column=1)
+     elif ID_Entry.get() and not CustName.get() and not Part_Entry.get():
+         print("---ID---")
+         c.execute("SELECT CustomerID, CustomerName, RentalBalance FROM vRentalInfo WHERE CustomerID=?",(ID_Entry.get(),))
+         records = c.fetchall()
 
-            """, (customerID,))
+         for data in records:
+             print_data += str(data[0])+"\t"+data[1]+"\t"+"$"+str(data[2])+".00\n"
 
-        # prepare output matrix
-        # 0 = id, 1 = name, 2 = balance, 3 = VIN
-        outArray = c.fetchall()
-        outputString = ""
+         search_label = Label(tab5, text=print_data, anchor=W, justify=LEFT)
+         search_label.grid(row=5, column=1)
+         root.geometry("750x500")
+         btn = Button(tab5, text='Clear', command= on_click)
+         btn.grid(row=6,column=1)
+     elif Part_Entry.get() and not CustName.get() and not ID_Entry.get():
+         print("---Part---")
+         c.execute("SELECT CustomerID, CustomerName, RentalBalance FROM vRentalInfo WHERE CustomerName LIKE ?", ('%'+Part_Entry.get()+'%',))
+         records = c.fetchall()
+         print(records)
 
-	# iterate through search output rows 
-        for row in range(len(outArray)):
+         for data in records:
+             if data[1] == 'J. Brown' or data[1] =='A. Hess':
+                 print_data += str(data[0])+"\t"+data[1]+"\t\t"+"$"+str(data[2])+".00\n"
+             else:
+                print_data += str(data[0])+"\t"+data[1]+"\t"+"$"+str(data[2])+".00\n"
 
-            if row == 0:
-                outputString += "ID: %s\nName = %s\nRemaining Balance:\n" % (outArray[row][0], outArray[row][1])
-                outputString += "Vin: %s\tBalance = $%s.00\n" % (outArray[row][3], outArray[row][2])
-		
-            outputString += "Vin: %s\tBalance = $%s.00\n" % (outArray[row][3], outArray[row][2])
+         search_label = Label(tab5, text=print_data, anchor=W, justify=LEFT)
+         search_label.grid(row=5, column=1)
+         root.geometry("750x600")
+         btn = Button(tab5, text='Clear', command= on_click)
+         btn.grid(row=6,column=1)
+     elif Part_Entry.get() and CustName.get() and ID_Entry.get():
+         print("---ALL---")
+         c.execute("SELECT CustomerID, CustomerName, RentalBalance FROM vRentalInfo WHERE CustomerID=? AND CustomerName=? AND CustomerName LIKE ?", (ID_Entry.get(), CustName.get(), '%'+Part_Entry.get()+'%',))
+         records = c.fetchall()
+         print(records)
+         for data in records:
+             print_data += str(data[0])+"\t"+str(data[1])+"\t"+"$"+str(data[2])+".00\n"
 
-        labelAndClear(tab5, outputString, 3, 1, 4, 1)
+         search_label = Label(tab5, text=print_data, anchor=W, justify=LEFT)
+         search_label.grid(row=5, column=1)
+         root.geometry("750x500")
+         btn = Button(tab5, text='Clear', command= on_click)
+         btn.grid(row=6,column=1)
+     else:
+         print("---None---")
+         c.execute("SELECT CustomerID, CustomerName, RentalBalance FROM vRentalInfo ORDER BY RentalBalance;")
+         records = c.fetchall()
+         print(records)
+         for data in records:
+             if data[1] == 'J. Brown' or data[1] =='A. Hess':
+                 print_data += str(data[0])+"\t"+data[1]+"\t\t"+"$"+str(data[2])+".00\n"
+             else:
+                print_data += str(data[0])+"\t"+data[1]+"\t"+"$"+str(data[2])+".00\n"
 
-    # search based on customer name/partial name
-    elif customerName:
+         search_label = Label(tab5, text=print_data,anchor=W, justify=LEFT)
+         search_label.grid(row=5, column=1)
+         root.geometry("750x700")
 
-        # retrieve vRentalInfo records for this customer
-        c.execute("""
+         btn = Button(tab5, text='Clear', command= on_click)
+         btn.grid(row=6,column=1)
 
-                    select customerid as 'ID', customername as 'Name', 
-			   rentalbalance as 'Remaining Balance', vin
-                    from vrentalinfo 
-                    where customername like ?
-		    order by rentalbalance
-
-            """, ('%'+customerName+'%',))
-
-        # prepare output matrix
-        # 0 = id, 1 = name, 2 = balance, 3 = VIN
-        outArray = c.fetchall()
-        outputString = ""
-
-	# iterate through search output rows 
-        for row in range(len(outArray)):
-
-            if row == 0:
-                outputString += "ID: %s\nName = %s\nRemaining Balance:\n" % (outArray[row][0], outArray[row][1])
-                outputString += "Vin: %s\tBalance = $%s.00\n" % (outArray[row][3], outArray[row][2])
-		
-            outputString += "Vin: %s\tBalance = $%s.00\n" % (outArray[row][3], outArray[row][2])
-
-        labelAndClear(tab5, outputString, 3, 1, 4, 1)
-
-    # empty search case: order all results by balance amount 
-    else:
-
-        # retrieve vRentalInfo records for this customer
-        c.execute("""
-
-                    select customerid as 'ID', customername as 'Name', 
-			   rentalbalance as 'Remaining Balance', vin
-                    from vrentalinfo 
-		    order by rentalbalance
-
-            """)
-
-        # prepare output matrix
-        # 0 = id, 1 = name, 2 = balance, 3 = VIN
-        outArray = c.fetchall()
-        outputString = ""
-
-	# iterate through search output rows 
-        for row in range(len(outArray)):
-
-            outputString += "ID: %s,\tName = %s,\t" % (outArray[row][0], outArray[row][1])
-            outputString += "Vin: %s,\tBalance = $%s.00\n" % (outArray[row][3], outArray[row][2])
-		
-        labelAndClear(tab5, outputString, 3, 1, 4, 1)
-
-
-
-    conn.close()
+     conn.close()
 
 
 #TAB 5 Labels/Entries 
@@ -639,154 +599,117 @@ Name_Label = Label(tab5, text='Customer Name: ')
 Name_Label.grid(row=1,column=0)
 CustName = Entry(tab5, justify=LEFT, width=30)
 CustName.grid(row=1, column=1)
+Or_Label = Label(tab5, text="OR")
+Or_Label.grid(row=2,column=0)
+Part_Label = Label(tab5, text='Part of Name: ')
+Part_Label.grid(row=3, column=0)
+Part_Entry = Entry(tab5, justify=LEFT, width=30)
+Part_Entry.grid(row=3, column=1)
 
 # Submit Button in Tab5b
 t5a_submit = Button(tab5, text='Search', command = CustSearch)
-t5a_submit.grid(row=2, column=1)
+t5a_submit.grid(row=4, column=1)
 
 
-# Find vehicle and print its rental data 
-def VehicleSearch():
+#VIN Search
+def VINSearch():
 
+    def on_click():
+        search_label.after(100, search_label.destroy())
+        DESName.delete(0, END)
+        VIN_Entry.delete(0, END)
+        DesPart_Entry.delete(0, END)
+        root.geometry("750x400")
+        
     conn = sqlite3.connect('cars.db')
     c = conn.cursor()
 
-    # get all data from text entries 
-    vin_input = VIN_Entry.get()
-    description_input = DESName.get()
+    VINOutput = "VIN\t\t\tDescription\t\tDaily\n"
 
+    if VIN_Entry.get() and not DesPart_Entry.get() and not DESName.get():
+        print("--VIN--")
+        c.execute("SELECT VehicleID, Description, Daily FROM Vehicle as V JOIN Rate as R ON V.Type=R.Type and V.Category = R.Category where VehicleID=?",(VIN_Entry.get(),))
+        record = c.fetchall()
+        print(record)
 
-    # retrieve all vehicle data 
-    c.execute("""
-		select * 
-		from vehicle;
-              """)
-
-    # prepare output matrix
-    # 0 = vid, 1 = descr, 2 = year, 3 = type, 4 = category
-    vehicledata = c.fetchall()
-
-
-    # retrieve all rental data 
-    c.execute("""
-		select * 
-		from vrentalinfo;
-              """)
-
-    # prepare output matrix
-    # 0-2: dates, 3=totaldays, 4=vin, =type, 4 = category
-    rentaldata = c.fetchall()
-
-    # search based on VIN
-    # OUTPUT: relevant VIN, Description, Avg Daily Price
-    # method: use VIN to find vehicle record and output that data, 
-    #	      then check vrentalinfo for records. sum up prices, days 
-    # 	      for that vehicle, then average 
-    if vin_input:
-
-        outputString = ""
-        vehiclefound = 0
-        rentalfound = 0
-
-        amountSum = 0
-        daysSum = 0
-        vehicleoccurence = 0 
-
-	# find vehicle
-        for row in range(len(vehicledata)):
-
-            if vehicledata[row][0] == vin_input: 
-                vehiclefound = 1
-                outputString += "VIN: %s\nDescription: %s\nAvg Daily Price: " % (vehicledata[row][0], vehicledata[row][1])
-                break;
-
-        # calculate and output its average daily price 
-        if not vehiclefound:
-            tkinter.messagebox.showinfo("Error", "Vehicle does not exist")
-        else:
-
-            # search rentalvinfo
-            for row in range(len(rentaldata)):
-
-                if rentaldata[row][4] == vin_input: 
-                    amountSum += rentaldata[row][10]
-                    daysSum += rentaldata[row][3]
-                    vehicleoccurence += 1
-                    rentalfound = 1
-
-            if rentalfound:
-                    outputString += "$%s.00" % (str(amountSum / daysSum))
+        for data in record:
+            if 'Acura' in data[1] or 'Audi' in data[1] or data[1]=='Nissan NV' or data[1] == 'Mazda 3' or data[1] == 'KIA Forte' or data[1] == 'Kia K900' or data[1] == 'BMW X1':
+                VINOutput += str(data[0])+"\t"+str(data[1])+"\t\t\t"+"$"+str(data[2])+".00\n"
+            elif 'Super Duty' in data[1]:
+                VINOutput += str(data[0])+"\t"+str(data[1])+"\t"+"$"+str(data[2])+".00\n"
             else:
-                    outputString += "Non-Applicable" 
+                VINOutput += str(data[0])+"\t"+str(data[1])+"\t\t"+"$"+str(data[2])+".00\n"
 
-            # set clear button 
-            labelAndClear6(tab6, outputString, 3, 1, 4, 1)
+        search_label = Label(tab6, text=VINOutput, anchor=W, justify=LEFT)
+        search_label.grid(row=5, column=1)
 
+        btn = Button(tab6, text='Clear', command= on_click)
+        btn.grid(row=6,column=1)
+    elif DesPart_Entry.get() and not VIN_Entry.get() and not DESName.get():
+        print("--DES--")
+        c.execute("SELECT VehicleID, Description, Daily FROM Vehicle as V JOIN Rate as R ON V.Type=R.Type and V.Category = R.Category where Description LIKE ?",('%'+DesPart_Entry.get()+'%',))
+        record = c.fetchall()
+        print(record)
 
-    # search based on vehicle description 
-    # elif description_input:
+        for data in record:
+            if 'Acura' in data[1] or 'Audi' in data[1] or data[1]=='Nissan NV' or data[1] == 'Mazda 3' or data[1] == 'KIA Forte' or data[1] == 'Kia K900' or data[1] == 'BMW X1':
+                VINOutput += str(data[0])+"\t"+str(data[1])+"\t\t\t"+"$"+str(data[2])+".00\n"
+            elif 'Super Duty' in data[1]:
+                VINOutput += str(data[0])+"\t"+str(data[1])+"\t"+"$"+str(data[2])+".00\n"
+            else:
+                VINOutput += str(data[0])+"\t"+str(data[1])+"\t\t"+"$"+str(data[2])+".00\n"
 
-    #     # retrieve vRentalInfo records for this customer
-    #     c.execute("""
+        search_label = Label(tab6, text=VINOutput, anchor=W, justify=LEFT)
+        search_label.grid(row=5, column=1)
 
-    #                 select customerid as 'ID', customername as 'Name', 
-    #     		   rentalbalance as 'Remaining Balance', vin
-    #                 from vrentalinfo 
-    #                 where customername like ?
-    #     	    order by rentalbalance
+        btn = Button(tab6, text='Clear', command= on_click)
+        btn.grid(row=6,column=1)
+    elif DESName.get() and not DesPart_Entry.get() and not VIN_Entry.get():
+        print("--Part--")
+        c.execute("SELECT VehicleID, Description, Daily FROM Vehicle as V JOIN Rate as R ON V.Type=R.Type and V.Category = R.Category where Description=?",(DESName.get(),))
+        record = c.fetchall()
+        print(record)
 
-    #         """, ('%'+customerName+'%',))
+        for data in record:
+            if 'Acura' in data[1] or 'Audi' in data[1] or data[1]=='Nissan NV' or data[1] == 'Mazda 3' or data[1] == 'KIA Forte' or data[1] == 'Kia K900' or data[1] == 'BMW X1':
+                VINOutput += str(data[0])+"\t"+str(data[1])+"\t\t\t"+"$"+str(data[2])+".00\n"
+            elif 'Super Duty' in data[1]:
+                VINOutput += str(data[0])+"\t"+str(data[1])+"\t"+"$"+str(data[2])+".00\n"
+            else:
+                VINOutput += str(data[0])+"\t"+str(data[1])+"\t\t"+"$"+str(data[2])+".00\n"
 
-    #     # prepare output matrix
-    #     # 0 = id, 1 = name, 2 = balance, 3 = VIN
-    #     outArray = c.fetchall()
-    #     outputString = ""
+        search_label = Label(tab6, text=VINOutput, anchor=W, justify=LEFT)
+        search_label.grid(row=5, column=1)
 
-    #     # iterate through search output rows 
-    #     for row in range(len(outArray)):
+        btn = Button(tab6, text='Clear', command= on_click)
+        btn.grid(row=6,column=1)
+    else:
+        print("--NONE--")
+        c.execute("SELECT VehicleID, Description, Daily FROM Vehicle as V JOIN Rate as R ON V.Type=R.Type and V.Category = R.Category;")
+        record = c.fetchall()
+        print(record)
 
-    #         if row == 0:
-    #             outputString += "ID: %s\nName = %s\nRemaining Balance:\n" % (outArray[row][0], outArray[row][1])
-    #             outputString += "Vin: %s\tBalance = $%s.00\n" % (outArray[row][3], outArray[row][2])
-    #     	
-    #         outputString += "Vin: %s\tBalance = $%s.00\n" % (outArray[row][3], outArray[row][2])
+        for data in record:
+            if 'Acura' in data[1] or 'Audi' in data[1] or data[1]=='Nissan NV' or data[1] == 'Mazda 3' or data[1] == 'KIA Forte' or data[1] == 'Kia K900' or data[1] == 'BMW X1':
+                VINOutput += str(data[0])+"\t"+str(data[1])+"\t\t\t"+"$"+str(data[2])+".00\n"
+            elif 'Super Duty' in data[1]:
+                VINOutput += str(data[0])+"\t"+str(data[1])+"\t"+"$"+str(data[2])+".00\n"
+            else:
+                VINOutput += str(data[0])+"\t"+str(data[1])+"\t\t"+"$"+str(data[2])+".00\n"
 
-    #     labelAndClear(tab5, outputString, 3, 1, 4, 1)
+        search_label = Label(tab6, text=VINOutput, anchor=W, justify=LEFT)
+        search_label.grid(row=5, column=1)
+        root.geometry("750x1250")
 
-    # # empty search case: order all results by balance amount 
-    # else:
-
-    #     # retrieve vRentalInfo records for this customer
-    #     c.execute("""
-
-    #                 select customerid as 'ID', customername as 'Name', 
-    #     		   rentalbalance as 'Remaining Balance', vin
-    #                 from vrentalinfo 
-    #     	    order by rentalbalance
-
-    #         """)
-
-    #     # prepare output matrix
-    #     # 0 = id, 1 = name, 2 = balance, 3 = VIN
-    #     outArray = c.fetchall()
-    #     outputString = ""
-
-    #     # iterate through search output rows 
-    #     for row in range(len(outArray)):
-
-    #         outputString += "ID: %s,\tName = %s,\t" % (outArray[row][0], outArray[row][1])
-    #         outputString += "Vin: %s,\tBalance = $%s.00\n" % (outArray[row][3], outArray[row][2])
-    #     	
-    #     labelAndClear(tab5, outputString, 3, 1, 4, 1)
-
+        btn = Button(tab6, text='Clear', command= on_click)
+        btn.grid(row=6,column=1)
 
 
     conn.close()
 
-
 # Submit Button in Tab5a
-t5a_submit = Button(tab6, text='Search', command = VehicleSearch)
-t5a_submit.grid(row=2, column=1)
+t5a_submit = Button(tab6, text='Search', command = CustSearch)
+t5a_submit.grid(row=4, column=1)
 
 #Entries in Tab5b
 VIN_Label = Label(tab6, text='VIN: ')
@@ -797,6 +720,16 @@ DES_Label = Label(tab6, text='Description: ')
 DES_Label.grid(row=1,column=0)
 DESName = Entry(tab6, justify=LEFT, width=30)
 DESName.grid(row=1, column=1)
+Or_Label = Label(tab6, text="OR")
+Or_Label.grid(row=2,column=0)
+DESpart_Label = Label(tab6, text='Part of Description: ')
+DESpart_Label.grid(row=3, column=0)
+DesPart_Entry = Entry(tab6, justify=LEFT, width=30)
+DesPart_Entry.grid(row=3, column=1)
+
+# Submit Button in Tab5b
+t5b_submit = Button(tab6, text='Search', command = VINSearch)
+t5b_submit.grid(row=4, column=1)
 
 
 root.mainloop()
