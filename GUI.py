@@ -6,15 +6,7 @@ from sqlite3.dbapi2 import paramstyle
 from tkinter import *
 from tkinter import ttk
 import tkinter.messagebox
-# from tkcalendar import Calendar
 import sqlite3
-
-
-# TODO: format phone number input on tab1
-# TODO: display query purpose info to user for each query
-# TODO: for each query, print all rows involved and their quantity
-# TODO: can add drop down menu's to select type/model/category etc.
-# TODO: AFTER DONE. tweak justification of boxes to make it look better
 
 ################################
 # CONSTS - to index grid position
